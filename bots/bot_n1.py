@@ -19,8 +19,9 @@ import logging
 import requests
 
 from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from openweather_api import api, location
+from telegram.ext import Updater, CommandHandler, CallbackContext
+from src.openweather_api import openweather_vars as ow_vars, location, apikey as ow_key
+from src.apikey import key as tkey
 
 # Enable logging
 logging.basicConfig(
@@ -30,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def get_weather(uri, key, city, lat, lon):
-    result = requests.get(uri, params={'lon': lat, 'lat': lon, 'appid': key, 'units': 'metric'})
+    result = requests.get(uri, params={'lon': lat, 'lat': lon, 'appid': 'eadccc0c99dc46b55a6cc0a885e5502b', 'units': 'metric'})
     return result.json()
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -52,19 +53,27 @@ def help_command(update: Update, _: CallbackContext) -> None:
 
 def weather_command(update: Update, _: CallbackContext) -> 'Ответ с информацией о погоде':
     user = update.effective_user
+    """Send data from api file to weather function"""
     try:
-        answer = get_weather(api.uri, api.api_key, api.default_city, location.lat, location.lon)
+        answer = get_weather(ow_vars.uri, ow_key, ow_vars.default_city, location.lat, location.lon)
         print(answer)
         ans_weather = answer['weather'][0]['description']
         ans_temp = answer['main']['temp']
+        ans_temp = answer['main']['temp']
         ans_temp_min = answer['main']['temp_min']
         ans_temp_max = answer['main']['temp_max']
-        update.message.reply_text('''Что у нас сегодня в Питере...
+        #ans_weather = answer['list'][0]['weather'][0]['description']
+        #ans_temp_day = answer['list'][0]['temp']['day']
+        #ans_temp_night = answer['list'][0]['temp']['night']
+        update.message.reply_text('''{}, вот что у нас сегодня в Питере...
+        
         Погода: {}
-        Температура сейчас: {}
-        Температура утром: {}
-        Температура ночью: {}
-        '''.format(ans_weather, ans_temp, ans_temp_min, ans_temp_max))
+        Температура средняя: {}
+        Температура (max): {}
+        Температура (min): {}
+        
+Хорошего дня!
+        '''.format(user.name,ans_weather, ans_temp, ans_temp_min, ans_temp_max))
     except Exception as e:
         print("Exception (weather):", e)
         pass
@@ -72,7 +81,7 @@ def weather_command(update: Update, _: CallbackContext) -> 'Ответ с инф
 def main() -> None:
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("1804952938:AAHiKwfCwXHxVmJ55BnHvd8ZT7qj7T-bW7Y")
+    updater = Updater(tkey)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher

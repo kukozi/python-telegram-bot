@@ -87,3 +87,7 @@ telegram.jpg
 
 # virtual env
 venv*
+
+# api keys
+src/apikey.py
+src/openweather_api/apikey.py
