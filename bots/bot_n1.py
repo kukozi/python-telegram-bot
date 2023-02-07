@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def get_weather(uri, key, city, lat, lon):
-    result = requests.get(uri, params={'lon': lat, 'lat': lon, 'appid': 'eadccc0c99dc46b55a6cc0a885e5502b', 'units': 'metric'})
+    result = requests.get(uri, params={'lon': lat, 'lat': lon, 'appid': key, 'units': 'metric'})
     return result.json()
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -58,7 +58,6 @@ def weather_command(update: Update, _: CallbackContext) -> 'Ответ с инф
         answer = get_weather(ow_vars.uri, ow_key, ow_vars.default_city, location.lat, location.lon)
         print(answer)
         ans_weather = answer['weather'][0]['description']
-        ans_temp = answer['main']['temp']
         ans_temp = answer['main']['temp']
         ans_temp_min = answer['main']['temp_min']
         ans_temp_max = answer['main']['temp_max']
