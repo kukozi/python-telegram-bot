@@ -22,6 +22,7 @@ from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from src.openweather_api import openweather_vars as ow_vars, location, apikey as ow_key
 from src.apikey import key as tkey
+import src.openweather_api.weather_descr as weather_descr
 
 # Enable logging
 logging.basicConfig(
@@ -30,9 +31,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
 def get_weather(uri, key, city, lat, lon):
     result = requests.get(uri, params={'lon': lat, 'lat': lon, 'appid': key, 'units': 'metric'})
     return result.json()
+
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -47,23 +50,26 @@ def start(update: Update, _: CallbackContext) -> None:
 # a way to send echo message:
 # update.message.reply_text(update.message.text)
 
+
 def help_command(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
+
 
 def weather_command(update: Update, _: CallbackContext) -> 'Ответ с информацией о погоде':
     user = update.effective_user
     """Send data from api file to weather function"""
     try:
-        answer = get_weather(ow_vars.uri, ow_key, ow_vars.default_city, location.lat, location.lon)
+        answer = get_weather(ow_vars.uri, ow_key.key, ow_vars.default_city, location.lat, location.lon)
         print(answer)
-        ans_weather = answer['weather'][0]['description']
+        ans_weather = answer['weather'][0]['id']
         ans_temp = answer['main']['temp']
         ans_temp_min = answer['main']['temp_min']
         ans_temp_max = answer['main']['temp_max']
-        #ans_weather = answer['list'][0]['weather'][0]['description']
-        #ans_temp_day = answer['list'][0]['temp']['day']
-        #ans_temp_night = answer['list'][0]['temp']['night']
+        # ans_weather = answer['list'][0]['weather'][0]['description']
+        # ans_temp_day = answer['list'][0]['temp']['day']
+        # ans_temp_night = answer['list'][0]['temp']['night']
+        # print('try '+weather_descr.weather[ans_weather])
         update.message.reply_text('''{}, вот что у нас сегодня в Питере...
         
         Погода: {}
@@ -72,10 +78,11 @@ def weather_command(update: Update, _: CallbackContext) -> 'Ответ с инф
         Температура (min): {}
         
 Хорошего дня!
-        '''.format(user.name,ans_weather, ans_temp, ans_temp_min, ans_temp_max))
+        '''.format(user.name, weather_descr.weather[ans_weather], ans_temp, ans_temp_min, ans_temp_max))
     except Exception as e:
         print("Exception (weather):", e)
         pass
+
 
 def main() -> None:
     """Start the bot."""
@@ -91,7 +98,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("weather", weather_command))
 
     # on non command i.e message - echo the message on Telegram
-    #dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
     # Start the Bot
     updater.start_polling()
